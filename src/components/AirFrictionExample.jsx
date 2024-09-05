@@ -13,9 +13,9 @@ const AirFrictionExample = () => {
       width: window.innerWidth,
       height: window.innerHeight,
       physics: {
-        default: "arcade",
+        default: "matter",
         arcade: {
-          gravity: { y: 300 },
+          gravity: { y: 1 },
           debug: true,
         },
       },
@@ -46,44 +46,62 @@ const AirFrictionExample = () => {
     background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
     background.setOrigin(0, 0);
 
-    const graphics = this.add.graphics({ fillStyle: { color: 0x00ff00 } });
+    //asdadsasd
 
-    // Добавляем этот графический объект как физическое тело
-    const rectSprite = this.add.sprite(100, 100, null);
-    rectSprite.setDisplaySize(75, 20); // Задаем размеры
-    rectSprite.setAngle(45); // Поворачиваем на 45 градусов
+    // Создаем графический объект для рисования прямоугольника
+    const graphics = this.add.graphics();
 
-    // Если нужно сделать его физическим телом
-    this.physics.add.existing(rectSprite, true);
+    // Задаем цвет прямоугольника
+    graphics.fillStyle(0x00ff00, 1); // Зеленый цвет
 
-    // Пример перемещения с коллайдером
+    // Рисуем прямоугольник с заданными координатами, шириной и высотой
+    graphics.fillRect(0, 0, 100, 5); // Рисуем относительно (0, 0)
 
-    // Добавляем коллайдер для объекта и линии
+    // Создаем физическое тело (прямоугольник) с Matter.js
+    const rectBody = this.matter.add.rectangle(0, 200, 100, 5, {
+      isStatic: true,
+    });
 
+    // Поворачиваем физическое тело на 45 градусов
+    this.matter.body.setAngle(rectBody, Phaser.Math.DegToRad(30));
+
+    // Привязываем графику к физическому телу
+    const rectSprite = this.add.container(
+      rectBody.position.x,
+      rectBody.position.y,
+      [graphics]
+    );
+
+    // Устанавливаем привязку контейнера к физическому телу
+    rectSprite.setSize(200, 100);
+    this.matter.add.gameObject(rectSprite, rectBody);
+
+    //asdasdasd
     // Создаем группу яиц
-    this.eggs = this.physics.add.group({
-      key: "egg",
-      repeat: 4,
-      setXY: { x: 5, y: 50, stepX: 100 },
-      setScale: { x: 0.1, y: 0.1 },
-      restitution: 0.8, // Масштабируем яйца, чтобы они выглядели как эллипсы
-    });
+    this.eggs = [];
 
-    this.eggs.children.iterate((egg) => {
-      egg.setBounce(0.2); // Устанавливаем упругость
-      egg.setCollideWorldBounds(true);
-    });
+    for (let i = 0; i < 5; i++) {
+      // Создаем физическое тело в виде эллипса (предполагая, что яйцо овальное)
+      let egg = this.matter.add.image(50 + i * 100, 50, "egg", null, {
+        shape: "circle", // Matter.js не поддерживает эллипсы напрямую, поэтому используем круг
+        restitution: 0.8, // Отскок
+      });
 
-    // Добавляем столкновение яиц с прямоугольником
+      // Масштабируем изображение яйца
+      egg.setScale(0.1);
 
-    this.physics.add.collider(this.eggs, rectSprite);
-    // Добавляем столкновение яиц с миром
-    this.physics.world.setBoundsCollision(true, true, true, true);
+      // Добавляем яйцо в массив
+      this.eggs.push(egg);
+    }
+
+    this.matter.world.setBounds(true);
   };
 
-  const update = function () {
-    // Логика обновления игры
+  const CreateEggs = () => {
+    console.log(this.eggs);
   };
+
+  const update = function () {};
 
   return <div id="phaser-game"></div>;
 };
