@@ -1,16 +1,15 @@
 import { Sprite } from "@pixi/react";
 import egg from "../assets/egg.png";
 
-const Egg = ({ position, visible }) => {
+const Egg = ({ position }) => {
   return (
     <Sprite
       image={egg}
-      x={0}
-      y={0}
+      x={position.x}
+      y={position.y}
       anchor={0.5}
       width={25}
       height={25}
-      visible={visible}
     />
   );
 };

@@ -12,14 +12,14 @@ const Wolf = ({ position, setPosition, containerWidth }) => {
       if (event.key === "ArrowLeft") {
         setPosition((prev) => ({
           ...prev,
-          x: Math.max(prev.x - 10, containerWidth * 0.1),
+          x: Math.max(prev.x - 10, containerWidth * 0.35),
         }));
         setStep("left");
       } else if (event.key === "ArrowRight") {
         setStep("right");
         setPosition((prev) => ({
           ...prev,
-          x: Math.min(prev.x + 10, containerWidth * 0.9),
+          x: Math.min(prev.x + 10, containerWidth * 0.65),
         }));
       }
     };
