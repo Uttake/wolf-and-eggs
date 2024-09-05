@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Stage, Sprite, useTick } from "@pixi/react";
-import * as PIXI from "pixi.js";
+
 import egg from "../assets/egg.png";
 import wolf from "../assets/littleWolf.png";
 import background from "../assets/background.webp";
@@ -43,6 +43,7 @@ const Game = () => {
 
   const [stepRight, setStepRight] = useState(false);
   const [score, setScore] = useState(0);
+
   // Логика перемещения волка
   useEffect(() => {
     const handleKeyDown = (event) => {
