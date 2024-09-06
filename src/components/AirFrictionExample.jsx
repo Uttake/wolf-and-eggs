@@ -2,6 +2,29 @@ import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import egg from "../assets/egg.png";
 import Matter from "matter-js";
+import house from "../assets/chickenHouse.png";
+
+let screenWidth = window.innerWidth;
+let screenHeight = window.innerHeight;
+
+let lines = [
+  {
+    x: 150,
+    y: screenHeight + 50,
+  },
+  {
+    x: 50,
+    y: 250,
+  },
+  {
+    x: 20,
+    y: 100,
+  },
+  {
+    x: 50,
+    y: 200,
+  },
+];
 
 const AirFrictionExample = () => {
   const gameRef = useRef(null);
@@ -14,9 +37,14 @@ const AirFrictionExample = () => {
       height: window.innerHeight,
       physics: {
         default: "matter",
-        arcade: {
-          gravity: { y: 1 },
-          debug: true,
+        matter: {
+          debug: {
+            showBody: true, // Показывать контуры тела
+            showStaticBody: true, // Показывать статические тела
+            showInternalEdges: true, // Показывать внутренние ребра
+            renderFill: false, // Заполнить тела цветом
+            showConvexHulls: true, // Показывать выпуклые оболочки
+          },
         },
       },
       scene: {
@@ -36,48 +64,67 @@ const AirFrictionExample = () => {
   }, []);
 
   const preload = function () {
-    this.load.image("background", "/background.webp");
+    this.load.image("background", "/background.png");
     this.load.image("egg", egg);
+    this.load.image("house", house);
   };
 
   const create = function () {
-    // Создаем прямоугольник, по которому будут скатываться яйца
     const background = this.add.image(0, 0, "background");
     background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
     background.setOrigin(0, 0);
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
 
-    //asdadsasd
+    let house = [
+      {
+        x: screenWidth * 0.8,
+        y: screenHeight * 0.5,
+        points: [
+          { x: -75, y: 60 }, // Левый верхний угол палки
+          { x: 0, y: 40 }, // Правый верхний угол палки
+          { x: 0, y: 50 }, // Правый нижний угол палки
+          { x: -75, y: 75 }, // Левый нижний угол палки,
+        ],
+      },
+      {
+        x: screenWidth * 0.8,
+        y: screenHeight * 0.7,
+        invis: true,
+      },
+      {
+        x: screenWidth * 0.2,
+        y: screenHeight * 0.5,
+        reverse: true,
+        invis: true,
+      },
 
-    // Создаем графический объект для рисования прямоугольника
-    const graphics = this.add.graphics();
+      {
+        x: screenWidth * 0.2,
+        y: screenHeight * 0.7,
+        reverse: true,
+        invis: true,
+      },
+    ];
 
-    // Задаем цвет прямоугольника
-    graphics.fillStyle(0x00ff00, 1); // Зеленый цвет
+    house.map((item) => {
+      let house = this.matter.add.image(item.x, item.y, "house", {});
 
-    // Рисуем прямоугольник с заданными координатами, шириной и высотой
-    graphics.fillRect(0, 0, 100, 5); // Рисуем относительно (0, 0)
+      house.setStatic(true);
+      item.reverse ? house.setScale(-0.3, 0.3) : house.setScale(0.3, 0.3);
 
-    // Создаем физическое тело (прямоугольник) с Matter.js
-    const rectBody = this.matter.add.rectangle(0, 200, 100, 5, {
-      isStatic: true,
+      if (item.points) {
+        house.setBody({
+          type: "fromVertices",
+          verts: item.points,
+        });
+      }
+
+      if (item.invis) {
+        house.setSensor(true);
+      }
     });
 
-    // Поворачиваем физическое тело на 45 градусов
-    this.matter.body.setAngle(rectBody, Phaser.Math.DegToRad(30));
-
-    // Привязываем графику к физическому телу
-    const rectSprite = this.add.container(
-      rectBody.position.x,
-      rectBody.position.y,
-      [graphics]
-    );
-
-    // Устанавливаем привязку контейнера к физическому телу
-    rectSprite.setSize(200, 100);
-    this.matter.add.gameObject(rectSprite, rectBody);
-
-    //asdasdasd
-    // Создаем группу яиц
     this.eggs = [];
 
     for (let i = 0; i < 5; i++) {
