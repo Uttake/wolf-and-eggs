@@ -39,11 +39,11 @@ const AirFrictionExample = () => {
         default: "matter",
         matter: {
           debug: {
-            showBody: true, // Показывать контуры тела
-            showStaticBody: true, // Показывать статические тела
-            showInternalEdges: true, // Показывать внутренние ребра
-            renderFill: false, // Заполнить тела цветом
-            showConvexHulls: true, // Показывать выпуклые оболочки
+            showAxes: true, // Показывать оси тел
+            showAngleIndicator: true, // Показывать углы
+            showVelocity: true, // Показывать векторы скорости
+            showCollisions: true, // Показывать области столкновений
+            showBounds: true, // Показывать границы тел
           },
         },
       },
@@ -81,10 +81,10 @@ const AirFrictionExample = () => {
         x: screenWidth * 0.8,
         y: screenHeight * 0.5,
         points: [
-          { x: -75, y: 60 }, // Левый верхний угол палки
-          { x: 0, y: 40 }, // Правый верхний угол палки
-          { x: 0, y: 50 }, // Правый нижний угол палки
-          { x: -75, y: 75 }, // Левый нижний угол палки,
+          { x: -30, y: 10 }, // Верхняя точка
+          { x: 30, y: 10 }, // Правая верхняя
+          { x: 30, y: -10 }, // Правая нижняя
+          { x: -30, y: -10 }, // Нижняя точка
         ],
       },
       {
@@ -111,13 +111,45 @@ const AirFrictionExample = () => {
       let house = this.matter.add.image(item.x, item.y, "house", {});
 
       house.setStatic(true);
+      house.setBody(null);
       item.reverse ? house.setScale(-0.3, 0.3) : house.setScale(0.3, 0.3);
 
       if (item.points) {
-        house.setBody({
-          type: "fromVertices",
-          verts: item.points,
+        house.setSensor(true);
+        var rect1 = this.matter.add.rectangle(
+          house.x - 40,
+          house.y + 46,
+          75,
+          10,
+          {
+            isStatic: true,
+            angle: Phaser.Math.DegToRad(151),
+          }
+        );
+
+        // Верхний прямоугольник
+
+        // Создание второго прямоугольного тела (ниже)
+        var rect2 = this.matter.add.rectangle(
+          house.x + 25,
+          house.y + 28,
+          70,
+          10,
+          {
+            isStatic: true,
+          }
+        ); // Нижний прямоугольник
+
+        // Соединение прямоугольников с изображением курятника
+        this.matter.add.constraint(house, rect1, 0, 0.9, {
+          pointA: { x: 0, y: -30 },
+          pointB: { x: 0, y: 0 },
         });
+        this.matter.add.constraint(house, rect2, 0, 0.9, {
+          pointA: { x: 0, y: 30 },
+          pointB: { x: 0, y: 0 },
+        });
+        // Соединяем порог и основной объект в составное тело
       }
 
       if (item.invis) {
