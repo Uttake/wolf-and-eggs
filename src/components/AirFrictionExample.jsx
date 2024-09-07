@@ -43,13 +43,13 @@ const AirFrictionExample = () => {
         default: "matter",
         matter: {
           gravity: { y: 0.8 },
-          debug: {
-            showAxes: true, // Показывать оси тел
-            showAngleIndicator: true, // Показывать углы
-            showVelocity: true, // Показывать векторы скорости
-            showCollisions: true, // Показывать области столкновений
-            showBounds: true, // Показывать границы тел
-          },
+          // debug: {
+          //   showAxes: true, // Показывать оси тел
+          //   showAngleIndicator: true, // Показывать углы
+          //   showVelocity: true, // Показывать векторы скорости
+          //   showCollisions: true, // Показывать области столкновений
+          //   showBounds: true, // Показывать границы тел
+          // },
         },
       },
       scene: {
