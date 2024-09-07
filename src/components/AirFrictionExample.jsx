@@ -5,7 +5,6 @@ import Matter from "matter-js";
 import house from "../assets/chickenHouse.png";
 import brokenEgg from "../assets/brokenEgg.png";
 import wolf from "../assets/littleWolf.png";
-import wolfWEgg from "../assets/wolfWEgg.png";
 import { useState } from "react";
 
 let screenWidth = window.innerWidth;
@@ -75,7 +74,6 @@ const AirFrictionExample = () => {
     this.load.image("house", house);
     this.load.image("cracked_egg", brokenEgg);
     this.load.image("wolf", wolf);
-    this.load.image("wolfWEgg", wolfWEgg);
   };
 
   const create = function () {
@@ -306,8 +304,6 @@ const AirFrictionExample = () => {
             (labelB === "egg" && labelA === "wolf")
           ) {
             const egg = labelA === "egg" ? bodyA.gameObject : bodyB.gameObject;
-            // wolf.setTexture("wolfWEgg");
-            // wolf.setDisplaySize(100, 100);
             egg.destroy();
           }
         });
