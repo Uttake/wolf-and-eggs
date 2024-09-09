@@ -6,9 +6,22 @@ import house from "../assets/chickenHouse.png";
 import brokenEgg from "../assets/brokenEgg.png";
 import wolf from "../assets/littleWolf.png";
 import { useState } from "react";
+import arrow from "../assets/arrow.png";
+import createWolf from "../lib/createWolf";
+import createBackground from "../lib/createBackground";
+import createGround from "../lib/createGround";
+import createArrow from "../lib/createArrow";
+import setupCollisionHandler from "../lib/collisionHandler";
+import spawnEggs from "../lib/eggsSpawner";
+import ladder from "../assets/ladder.png";
 
 let screenWidth = window.innerWidth;
 let screenHeight = window.innerHeight;
+
+const MIN_X = screenWidth * 0.385;
+const MAX_X = screenWidth * 0.615;
+const MIN_Y = screenHeight * 0.4;
+const MAX_Y = screenHeight * 0.73;
 
 let lines = [
   {
@@ -29,7 +42,7 @@ let lines = [
   },
 ];
 
-const AirFrictionExample = () => {
+const AirFrictionExample = ({ setScore, score }) => {
   const [nWolf, setNWolf] = useState(true);
   const gameRef = useRef(null);
 
@@ -74,51 +87,90 @@ const AirFrictionExample = () => {
     this.load.image("house", house);
     this.load.image("cracked_egg", brokenEgg);
     this.load.image("wolf", wolf);
+    this.load.image("arrow", arrow);
+    this.load.image("ladder", ladder);
   };
 
   const create = function () {
-    const background = this.add.image(0, 0, "background");
-    background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
-    background.setOrigin(0, 0);
     let screenWidth = window.innerWidth;
     let screenHeight = window.innerHeight;
 
-    const wolf = this.matter.add.image(
+    const background = createBackground(this, 0, 0);
+    background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
+
+    const wolf = createWolf(this, screenWidth / 2, screenHeight * 0.73);
+    wolf.setDepth(1);
+
+    this.wolf = wolf;
+
+    const ground = createGround(
+      this,
+      screenWidth,
+      screenHeight * 0.8,
+      screenWidth
+    );
+
+    const ladder = this.matter.add.image(
       screenWidth / 2,
-      screenHeight - 200,
-      "wolf",
+      screenHeight * 0.56,
+      "ladder",
+      null,
       {
         isStatic: true,
+        collisionFilter: {
+          category: 0x0001,
+          mask: 0x0000, // Маска, указывающая, что объект не будет сталкиваться с другими объектами
+        },
       }
     );
 
-    wolf.setDisplaySize(100, 100);
-    wolf.setData("label", "wolf");
+    ladder.setScale(0.04, 0.05);
+    ladder.setDepth(0);
 
-    this.input.on("pointermove", (pointer) => {
-      if (wolf) {
-        // Получаем новую позицию по X
-        const newX = Phaser.Math.Clamp(pointer.x, 0, this.game.config.width);
-        Matter.Body.setPosition(wolf.body, { x: newX, y: wolf.y });
-      }
-    });
+    const rightArrow = createArrow(
+      this,
+      screenWidth * 0.63,
+      screenHeight * 0.88,
+      0.03,
+      0.03,
+      0,
+      "right"
+    );
 
-    const ground = this.matter.add.rectangle(
-      this.scale.width / 2,
-      this.scale.height - 50,
-      this.scale.width,
-      20,
-      {
-        isStatic: true,
-        render: { visible: false },
-        label: "ground",
-      }
+    const leftArrow = createArrow(
+      this,
+      screenWidth * 0.37,
+      screenHeight * 0.88,
+      -0.03,
+      0.03,
+      0,
+      "left"
+    );
+
+    const topArrow = createArrow(
+      this,
+      screenWidth * 0.5,
+      screenHeight * 0.83,
+      0.03,
+      -0.03,
+      270,
+      "top"
+    );
+
+    const bottomArrow = createArrow(
+      this,
+      screenWidth * 0.5,
+      screenHeight * 0.93,
+      0.03,
+      -0.03,
+      90,
+      "bottom"
     );
 
     let house = [
       {
         x: screenWidth * 0.85,
-        y: screenHeight * 0.6,
+        y: screenHeight * 0.4,
         points: [
           { x: -30, y: 10 }, // Верхняя точка
           { x: 30, y: 10 }, // Правая верхняя
@@ -128,7 +180,7 @@ const AirFrictionExample = () => {
       },
       {
         x: screenWidth * 0.85,
-        y: screenHeight * 0.75,
+        y: screenHeight * 0.55,
         points: [
           { x: -30, y: 10 }, // Верхняя точка
           { x: 30, y: 10 }, // Правая верхняя
@@ -138,7 +190,7 @@ const AirFrictionExample = () => {
       },
       {
         x: screenWidth * 0.15,
-        y: screenHeight * 0.6,
+        y: screenHeight * 0.4,
         reverse: true,
         points: [
           { x: 30, y: -10 }, // Верхняя точка
@@ -150,7 +202,7 @@ const AirFrictionExample = () => {
 
       {
         x: screenWidth * 0.15,
-        y: screenHeight * 0.75,
+        y: screenHeight * 0.55,
         reverse: true,
         points: [
           { x: 30, y: -10 }, // Верхняя точка
@@ -180,7 +232,6 @@ const AirFrictionExample = () => {
 
       const rect2 = this.matter.add.rectangle(
         item.reverse ? house.x - 25 : house.x + 25,
-
         house.y + 20,
         45,
         5,
@@ -212,112 +263,24 @@ const AirFrictionExample = () => {
 
     this.eggs = [];
 
-    const spawnEggs = (scene, eggCount) => {
-      let minDelay = 2000;
-      let maxDelay = 3000;
-      const delayReduction = 100; // Насколько уменьшать интервал появления яиц
-      let currentEggCount = 0;
-
-      // Создаем невидимую землю, на которую будут падать яйца
-      const spawnEgg = () => {
-        if (currentEggCount >= eggCount) {
-          clearInterval(eggInterval); // Останавливаем интервал после создания нужного количества яиц
-          return;
-        }
-
-        // Выбираем случайный домик
-        const houseIndex = Phaser.Math.Between(0, house.length - 1);
-        const selectedHouse = house[houseIndex];
-
-        // Позиции для яйца
-        let x = selectedHouse.reverse
-          ? selectedHouse.x + 20
-          : selectedHouse.x - 20;
-        let y = selectedHouse.reverse
-          ? selectedHouse.y + 20
-          : selectedHouse.y - 20;
-
-        // Создаем физическое тело в виде эллипса (предполагая, что яйцо овальное)
-        let egg = scene.matter.add.image(x, y, "egg", null, {
-          shape: "circle",
-          restitution: 0.6,
-          friction: 0,
-          frictionAir: 0.1,
-          density: 0.001,
-          label: "egg", // Отскок
-        });
-
-        // Масштабируем изображение яйца
-        egg.setScale(0.1);
-
-        egg.setData("label", "egg");
-
-        // Добавляем яйцо в массив
-        egg.setAngularVelocity(0.1);
-        egg.setOrigin(0.5, 0.5);
-        scene.eggs.push(egg);
-
-        setupCollisionHandler(scene);
-
-        currentEggCount++;
-
-        // Уменьшаем интервал появления яиц
-        minDelay = Math.max(500, minDelay - delayReduction);
-        maxDelay = Math.max(1000, maxDelay - delayReduction);
-
-        // Обновляем интервал появления следующего яйца
-        clearInterval(eggInterval);
-        eggInterval = setInterval(
-          spawnEgg,
-          Phaser.Math.Between(minDelay, maxDelay)
-        );
-      };
-
-      // Устанавливаем начальный интервал появления яиц
-      let eggInterval = setInterval(
-        spawnEgg,
-        Phaser.Math.Between(minDelay, maxDelay)
-      );
-    };
-
-    function setupCollisionHandler(scene) {
-      scene.matter.world.on("collisionstart", (event) => {
-        event.pairs.forEach((pair) => {
-          const { bodyA, bodyB } = pair;
-          const labelA = bodyA.gameObject?.getData("label");
-          const labelB = bodyB.gameObject?.getData("label");
-
-          if (
-            (bodyA.label === "egg" && bodyB.label === "ground") ||
-            (bodyB.label === "egg" && bodyA.label === "ground")
-          ) {
-            const egg = labelA === "egg" ? bodyA.gameObject : bodyB.gameObject;
-            egg.setTexture("cracked_egg");
-
-            scene.time.delayedCall(1000, () => {
-              egg.destroy();
-            });
-          }
-
-          if (
-            (labelA === "egg" && labelB === "wolf") ||
-            (labelB === "egg" && labelA === "wolf")
-          ) {
-            const egg = labelA === "egg" ? bodyA.gameObject : bodyB.gameObject;
-            egg.destroy();
-          }
-        });
-      });
-    }
-
-    spawnEggs(this, 50);
+    setupCollisionHandler(this, setScore, score);
+    spawnEggs(this, 50, house);
   };
 
   const CreateEggs = () => {
     console.log(this.eggs);
   };
 
-  const update = function () {};
+  const update = function () {
+    const wolf = this.wolf;
+
+    if (wolf) {
+      // Проверка границ
+      wolf.x = Phaser.Math.Clamp(wolf.x, MIN_X, MAX_X);
+      wolf.y = Phaser.Math.Clamp(wolf.y, MIN_Y, MAX_Y);
+      wolf.body.angularVelocity = 0;
+    }
+  };
 
   return <div id="phaser-game"></div>;
 };

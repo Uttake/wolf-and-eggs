@@ -2,17 +2,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Stage, Sprite } from "@pixi/react";
 
-import Wolf from "./components/Wolf";
-import Egg from "./components/Egg";
 import background from "./assets/background.webp";
-import Matter from "matter-js";
 import AirFrictionExample from "./components/AirFrictionExample";
+import Score from "./components/Score";
 
 const Background = ({ w, h }) => {
   return <Sprite image={background} x={0} y={0} width={w} height={h} />;
 };
 
 const App = () => {
+  const [score, setScore] = useState(0);
   // const containerWidth = window.innerWidth;
   // const containerHeight = window.innerHeight;
 
@@ -88,7 +87,10 @@ const App = () => {
     //     {/* <Egg position={eggPositions} /> */}
     //   </Stage>
     // </>
-    <AirFrictionExample />
+    <>
+      <Score score={score} />
+      <AirFrictionExample setScore={setScore} score={score} />
+    </>
   );
 };
 
