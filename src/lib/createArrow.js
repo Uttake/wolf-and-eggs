@@ -1,56 +1,66 @@
-const createArrow = (scene, x, y, scaleX, scaleY, angle, moveDirection) => {
+const createArrow = (
+  scene,
+  x,
+  y,
+  scaleX,
+  scaleY,
+  angle,
+  targetX,
+  targetY,
+  offsetX,
+  offsetY,
+  rad,
+  color
+) => {
   const arrow = scene.add.image(x, y, "arrow", null, { isStatic: true });
   arrow.setScale(scaleX, scaleY);
-  arrow.setInteractive(); // Делает объект интерактивным
-
+  arrow.setInteractive();
   arrow.setAngle(angle);
 
-  // let isPointerDown = false;
+  const circleX = x + offsetX;
+  const circleY = y + offsetY;
 
-  arrow.on("pointerdown", () => {
-    moveWolf(scene.wolf, moveDirection);
+  const circle = scene.add.graphics({ fillStyle: { color: color } });
+  circle.fillCircle(circleX, circleY, rad);
+
+  circle.setInteractive(
+    new Phaser.Geom.Circle(circleX, circleY, rad),
+    Phaser.Geom.Circle.Contains
+  );
+
+  circle.on("pointerdown", () => {
+    moveWolf(scene.wolf, targetX, targetY + 40);
   });
-
-  // arrow.on("pointerup", () => {
-  //   isPointerDown = false;
-  // });
-
-  // arrow.on("pointerout", () => {
-  //   isPointerDown = false;
-  // });
 
   return arrow;
 };
 
-function moveWolf(wolf, direction) {
+function moveWolf(wolf, targetX, targetY) {
   if (!wolf) {
     console.log("Wolf is not defined");
     return;
   }
 
-  const moveDistance = 15; // Расстояние, на которое перемещается волк
+  const speed = 200;
+  const distanceX = targetX - wolf.x;
+  const distanceY = targetY - wolf.y;
+  const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-  switch (direction) {
-    case "left":
-      wolf.setScale(0.1, 0.1);
-      wolf.x -= moveDistance;
-      break;
-    case "right":
-      wolf.setScale(-0.1, 0.1);
-      wolf.x += moveDistance;
-      break;
-    case "top":
-      wolf.y -= moveDistance;
-      break;
-    case "bottom":
-      wolf.y += moveDistance;
-    default:
-      break;
+  const duration = (distance / speed) * 1000;
+
+  const tween = wolf.scene.tweens.add({
+    targets: wolf,
+    x: targetX,
+    y: targetY,
+    duration: duration,
+    ease: "Power2",
+  });
+
+  if (distanceX < 0) {
+    wolf.setScale(0.1, 0.1);
+  } else {
+    wolf.setScale(-0.1, 0.1);
   }
-
-  // if (isPointerDown) {
-  //   setTimeout(() => moveWolf(wolf, direction), 100);
-  // }
 }
 
 export default createArrow;

@@ -7,8 +7,22 @@ const createWolf = (scene, x = 400, y = 550) => {
   wolf.setScale(0.1, 0.1);
   wolf.setData("label", "wolf");
   wolf.setStatic(true);
-  //   wolf.setCircle(45);
-  //  wolf.body.inertia = Infinity;
+
+  const scaledWidth = wolf.width * wolf.scaleX;
+  const scaledHeight = wolf.height * wolf.scaleY;
+
+  const customHitboxWidth = scaledWidth * 0.73;
+  const customHitboxHeight = scaledHeight * 0.9;
+
+  wolf.setBody({
+    type: "rectangle",
+    width: customHitboxWidth,
+    height: customHitboxHeight,
+  });
+
+  wolf.setStatic(true);
+  wolf.setFixedRotation();
+
   return wolf;
 };
 

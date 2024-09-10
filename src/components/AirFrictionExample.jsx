@@ -72,7 +72,6 @@ const AirFrictionExample = ({ setScore, score }) => {
       },
     };
 
-    // Инициализация игры
     const game = new Phaser.Game(config);
     gameRef.current = game;
 
@@ -110,106 +109,130 @@ const AirFrictionExample = ({ setScore, score }) => {
       screenWidth
     );
 
-    const ladder = this.matter.add.image(
-      screenWidth / 2,
-      screenHeight * 0.56,
-      "ladder",
-      null,
-      {
-        isStatic: true,
-        collisionFilter: {
-          category: 0x0001,
-          mask: 0x0000, // Маска, указывающая, что объект не будет сталкиваться с другими объектами
-        },
-      }
-    );
+    // const ladder = this.matter.add.image(
+    //   screenWidth / 2,
+    //   screenHeight * 0.56,
+    //   "ladder",
+    //   null,
+    //   {
+    //     isStatic: true,
+    //     collisionFilter: {
+    //       category: 0x0001,
+    //       mask: 0x0000, // Маска, указывающая, что объект не будет сталкиваться с другими объектами
+    //     },
+    //   }
+    // );
 
-    ladder.setScale(0.04, 0.05);
-    ladder.setDepth(0);
+    // ladder.setScale(0.04, 0.05);
+    // ladder.setDepth(0);
 
-    const rightArrow = createArrow(
+    const topRightArrow = createArrow(
       this,
-      screenWidth * 0.63,
-      screenHeight * 0.88,
+      screenWidth * 0.85,
+      screenHeight * 0.8,
       0.03,
       0.03,
-      0,
-      "right"
+      -40,
+      screenWidth * 0.85,
+      screenHeight * 0.5,
+      -45,
+      25,
+      15,
+      0xff0000
     );
 
-    const leftArrow = createArrow(
+    const bottomRightArrow = createArrow(
       this,
-      screenWidth * 0.37,
-      screenHeight * 0.88,
-      -0.03,
-      0.03,
-      0,
-      "left"
-    );
-
-    const topArrow = createArrow(
-      this,
-      screenWidth * 0.5,
-      screenHeight * 0.83,
-      0.03,
-      -0.03,
-      270,
-      "top"
-    );
-
-    const bottomArrow = createArrow(
-      this,
-      screenWidth * 0.5,
+      screenWidth * 0.85,
       screenHeight * 0.93,
       0.03,
       -0.03,
-      90,
-      "bottom"
+      40,
+      screenWidth * 0.85,
+      screenHeight * 0.65,
+      -45,
+      -25,
+      15,
+      0xff0000
+    );
+
+    const bottomLeftArrow = createArrow(
+      this,
+      screenWidth * 0.15,
+      screenHeight * 0.93,
+      -0.03,
+      0.03,
+      -40,
+      screenWidth * 0.15,
+      screenHeight * 0.65,
+      45,
+      -25,
+      15,
+      0xff0000
+    );
+
+    const topLeftArrow = createArrow(
+      this,
+      screenWidth * 0.15,
+      screenHeight * 0.8,
+      0.03,
+      -0.03,
+      220,
+      screenWidth * 0.15,
+      screenHeight * 0.5,
+      45,
+      25,
+      15,
+      0xff0000
     );
 
     let house = [
       {
+        name: "topRight",
         x: screenWidth * 0.85,
-        y: screenHeight * 0.4,
-        points: [
-          { x: -30, y: 10 }, // Верхняя точка
-          { x: 30, y: 10 }, // Правая верхняя
-          { x: 30, y: -10 }, // Правая нижняя
-          { x: -30, y: -10 }, // Нижняя точка
-        ],
+        y: screenHeight * 0.5,
+        // points: [
+        //   { x: -30, y: 10 }, // Верхняя точка
+        //   { x: 30, y: 10 }, // Правая верхняя
+        //   { x: 30, y: -10 }, // Правая нижняя
+        //   { x: -30, y: -10 }, // Нижняя точка
+        // ],
       },
       {
+        name: "bottomRight",
         x: screenWidth * 0.85,
-        y: screenHeight * 0.55,
-        points: [
-          { x: -30, y: 10 }, // Верхняя точка
-          { x: 30, y: 10 }, // Правая верхняя
-          { x: 30, y: -10 }, // Правая нижняя
-          { x: -30, y: -10 }, // Нижняя точка
-        ],
+        y: screenHeight * 0.65,
+        // points: [
+        //   { x: -30, y: 10 }, // Верхняя точка
+        //   { x: 30, y: 10 }, // Правая верхняя
+        //   { x: 30, y: -10 }, // Правая нижняя
+        //   { x: -30, y: -10 }, // Нижняя точка
+        // ],
       },
       {
+        name: "topLeft",
         x: screenWidth * 0.15,
-        y: screenHeight * 0.4,
+        y: screenHeight * 0.5,
         reverse: true,
-        points: [
-          { x: 30, y: -10 }, // Верхняя точка
-          { x: -30, y: -10 }, // Правая верхняя
-          { x: -30, y: 10 }, // Правая нижняя
-          { x: 30, y: 10 }, // Нижняя точка
-        ],
+        // points: [
+        //   { x: 30, y: -10 }, // Верхняя точка
+        //   { x: -30, y: -10 }, // Правая верхняя
+        //   { x: -30, y: 10 }, // Правая нижняя
+        //   { x: 30, y: 10 }, // Нижняя точка
+        // ],
       },
 
       {
+        name: "bottomLeft",
         x: screenWidth * 0.15,
-        y: screenHeight * 0.55,
+        y: screenHeight * 0.65,
         reverse: true,
-        points: [
-          { x: 30, y: -10 }, // Верхняя точка
-          { x: -30, y: -10 }, // Правая верхняя
-          { x: -30, y: 10 }, // Правая нижняя
-          { x: 30, y: 10 }, // Нижняя точка
-        ],
+        // points: [
+        //   { x: 30, y: -10 }, // Верхняя точка
+        //   { x: -30, y: -10 }, // Правая верхняя
+        //   { x: -30, y: 10 }, // Правая нижняя
+        //   { x: 30, y: 10 }, // Нижняя точка
+        // ],
       },
     ];
 
